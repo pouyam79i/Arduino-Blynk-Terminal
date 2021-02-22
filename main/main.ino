@@ -1,32 +1,4 @@
-/*************************************************************
-  Download latest Blynk library here:
-    https://github.com/blynkkk/blynk-library/releases/latest
-
-  Blynk is a platform with iOS and Android apps to control
-  Arduino, Raspberry Pi and the likes over the Internet.
-  You can easily build graphic interfaces for all your
-  projects by simply dragging and dropping widgets.
-
-    Downloads, docs, tutorials: http://www.blynk.cc
-    Sketch generator:           http://examples.blynk.cc
-    Blynk community:            http://community.blynk.cc
-    Follow us:                  http://www.fb.com/blynkapp
-                                http://twitter.com/blynk_app
-
-  Blynk library is licensed under MIT license
-  This example code is in public domain.
-
- *************************************************************
-
-  You can send/receive any data using WidgetTerminal object.
-
-  App project setup:
-    Terminal widget attached to Virtual Pin V1
- *************************************************************/
-
-/* Comment this out to disable prints and save space */
 #define BLYNK_PRINT Serial
-
 
 #include <SPI.h>
 #include <Ethernet.h>
@@ -34,7 +6,7 @@
 
 // You should get Auth Token in the Blynk App.
 // Go to the Project Settings (nut icon).
-char auth[] = "YourAuthToken";
+char auth[] = "yourAuth";
 
 #define W5100_CS  10
 #define SDCARD_CS 4
@@ -46,17 +18,79 @@ WidgetTerminal terminal(V1);
 // the same Virtual Pin as your Terminal Widget
 BLYNK_WRITE(V1)
 {
-
+  
   // if you type "Marco" into Terminal Widget - it will respond: "Polo:"
-  if (String("Marco") == param.asStr()) {
-    terminal.println("You said: 'Marco'") ;
-    terminal.println("I said: 'Polo'") ;
-  } else {
+  // if (String("pin") == param.asStr()) {
+  //   terminal.println("You said: 'Marco'") ;
+  //   terminal.println("I said: 'Polo'") ;
+  // } else {
 
-    // Send it back
-    terminal.print("You said:");
-    terminal.write(param.getBuffer(), param.getLength());
-    terminal.println();
+  //   // Send it back
+  //   terminal.print("You said:");
+  //   terminal.write(param.getBuffer(), param.getLength());
+  //   terminal.println();
+  // }
+
+  String myInput = param.asStr();
+  myInput.trim();
+  
+  myInput.trim();
+  if(myInput.startsWith("pin") == true) {
+    Serial.println("It has pin command");
+    delay(500);
+    Serial.print("The Input is: ");
+    delay(500);
+    Serial.println(myInput);
+    Serial.print("Index of p: ");
+    Serial.print(myInput.indexOf("p"));
+    delay(500);
+    Serial.print(" Index of first dash : ");
+    Serial.println(myInput.indexOf("-"));
+    Serial.print("Index of first dash : ");
+    Serial.println(myInput.indexOf("-", myInput.indexOf("-") + 1));
+    char str[myInput.length()+ 1];
+    myInput.toCharArray(str, myInput.length() + 1);
+    str[myInput.length()+1] = '\0';
+    char func = str[myInput.indexOf("-")+1];
+    char state = str[myInput.indexOf("-", myInput.indexOf("-")+1)+1];
+    Serial.print("func: ");
+    Serial.println(func);
+    delay(100);
+    Serial.print("state: ");
+    Serial.println(state);
+    Serial.println(str);
+    int temp = myInput.indexOf("-") - 3;
+    Serial.println(temp);
+    int pinNumber = 0;
+    if(temp==1)
+  {
+       pinNumber = int(str[3]) - 48;
+      
+  }else if(temp == 2){
+  
+    pinNumber = int(str[4]) - 48;
+    pinNumber += 10;
+    }
+    Serial.print("pin num: ");
+      Serial.println(pinNumber);
+    
+    if(func == 'o'){
+    pinMode(pinNumber, OUTPUT);
+    if(state == 'h'){
+      digitalWrite(pinNumber, HIGH);
+    }
+    else if(state == 'l'){
+      digitalWrite(pinNumber, LOW);
+    }
+  }else if(func == 'i'){
+    pinMode(pinNumber, INPUT);
+    delay(100);
+    Serial.print("digital pin ");
+    Serial.print(pinNumber);
+    Serial.print(" value: ");
+    Serial.println(digitalRead(pinNumber));
+    
+  }
   }
 
   // Ensure everything is sent
@@ -72,15 +106,9 @@ void setup()
   digitalWrite(SDCARD_CS, HIGH); // Deselect the SD card
 
   Blynk.begin(auth);
-  // You can also specify server:
-  //Blynk.begin(auth, "blynk-cloud.com", 80);
-  //Blynk.begin(auth, IPAddress(192,168,1,100), 8080);
 
-  // Clear the terminal content
   terminal.clear();
 
-  // This will print Blynk Software version to the Terminal Widget when
-  // your hardware gets connected to Blynk Server
   terminal.println(F("Blynk v" BLYNK_VERSION ": Device started"));
   terminal.println(F("-------------"));
   terminal.println(F("Type 'Marco' and get a reply, or type"));
@@ -92,4 +120,3 @@ void loop()
 {
   Blynk.run();
 }
-
